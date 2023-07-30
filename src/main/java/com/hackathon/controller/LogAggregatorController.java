@@ -6,6 +6,7 @@ import net.sourceforge.plantuml.FileFormat;
 import net.sourceforge.plantuml.FileFormatOption;
 import net.sourceforge.plantuml.SourceStringReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ public class LogAggregatorController {
     @Autowired
     private EventRepository eventRepository;
 
+
     @GetMapping("/sequence-diagram")
     public String getSequenceDiagram(@RequestParam("trace-id") String traceId) throws IOException {
         if (eventRepository.existsById(traceId)) {
@@ -38,7 +40,7 @@ public class LogAggregatorController {
         return "Trace id doesn't exist in database.";
     }
 
-    @GetMapping("/data")
+    @GetMapping(path = "/data", produces = MediaType.TEXT_HTML_VALUE)
     public String getPayloadDiagram(@RequestParam("payload") String payload, @RequestParam("trace-id") String traceId) throws IOException {
         if (payload == null) {
             return "invalid payload.";
@@ -47,7 +49,9 @@ public class LogAggregatorController {
         String decodedPayload = new String(decodedBytes);
         System.out.println(decodedPayload);
         if (eventRepository.existsById(traceId)) {
-            StringBuilder sb = new StringBuilder();
+
+            // json diagram not working with old lib version.
+/*            StringBuilder sb = new StringBuilder();
             sb.append("@startjson\n");
             sb.append(decodedPayload);
             sb.append("\n");
@@ -56,7 +60,8 @@ public class LogAggregatorController {
             try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                 String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
                 return new String(os.toByteArray(), StandardCharsets.ISO_8859_1);
-            }
+            }*/
+            return String.format("<pre>%s</pre>",decodedPayload);
         }
         return "trace id doesn't exist in database.";
     }
