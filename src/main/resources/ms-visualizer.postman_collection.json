@@ -1,0 +1,68 @@
+{
+	"info": {
+		"_postman_id": "1a4e7070-dc30-4f63-8618-90833e5495a9",
+		"name": "ms-visualizer",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8080/logs",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "trace-id",
+						"value": "123456789",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"source\": \"customer_service\",\r\n    \"target\": \"billing_service\",\r\n    \"type\": \"request\",\r\n    \"payload\":\"{\\\"properties\\\" : {\\\"propertyName\\\" : \\\"test\\\",\\\"propertyDesc\\\" : \\\"desc\\\"}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/logs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"logs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/logs?trace-id=123456789",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/logs?trace-id=123456789",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"logs"
+					],
+					"query": [
+						{
+							"key": "trace-id",
+							"value": "123456789"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
