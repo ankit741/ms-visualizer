@@ -30,6 +30,7 @@
             <artifactId>plantuml</artifactId>
             <version>8059</version>
         </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -58,5 +59,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

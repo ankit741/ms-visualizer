@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,18 +25,40 @@ public class LogAggregatorController {
     private EventRepository eventRepository;
 
     @GetMapping("/sequence-diagram")
-    public String getImage(@RequestParam("trace-id") String traceId) throws IOException {
+    public String getSequenceDiagram(@RequestParam("trace-id") String traceId) throws IOException {
         if (eventRepository.existsById(traceId)) {
             ResponseEntity<String> responseEntity = getAllEvent(traceId);
             String source = responseEntity.getBody();
             SourceStringReader reader = new SourceStringReader(source);
-            final ByteArrayOutputStream os = new ByteArrayOutputStream();
-            String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
-            os.close();
-            final String svg = new String(os.toByteArray(), StandardCharsets.UTF_8);
-            return svg;
+            try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
+                return new String(os.toByteArray(), StandardCharsets.UTF_8);
+            }
         }
         return "Trace id doesn't exist in database.";
+    }
+
+    @GetMapping("/data")
+    public String getPayloadDiagram(@RequestParam("payload") String payload, @RequestParam("trace-id") String traceId) throws IOException {
+        if (payload == null) {
+            return "invalid payload.";
+        }
+        byte[] decodedBytes = Base64.getDecoder().decode(payload);
+        String decodedPayload = new String(decodedBytes);
+        System.out.println(decodedPayload);
+        if (eventRepository.existsById(traceId)) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("@startjson\n");
+            sb.append(decodedPayload);
+            sb.append("\n");
+            sb.append("@endjson\n");
+            SourceStringReader reader = new SourceStringReader(sb.toString());
+            try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
+                return new String(os.toByteArray(), StandardCharsets.ISO_8859_1);
+            }
+        }
+        return "trace id doesn't exist in database.";
     }
 
     @PostMapping("/logs")
@@ -67,16 +90,14 @@ public class LogAggregatorController {
             sb.append("@startuml\n");
             sb.append(event);
             sb.append("\n");
-            sb.append("url of esp is [[http://www.google.com]]");
-            sb.append("\n");
-            if(!event.getEventMap().isEmpty()) {
+            if (!event.getEventMap().isEmpty()) {
                 List<Event> eventList = event.getEventMap().get(traceId);
                 eventList.forEach(e -> {
                     sb.append(e.toString());
                     sb.append("\n");
                 });
             }
-            sb.append("@enduml\n");
+            sb.append("@enduml");
             return ResponseEntity.ok(sb.toString());
         }
         return ResponseEntity.noContent().build();

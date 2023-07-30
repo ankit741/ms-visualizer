@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.keyvalue.annotation.KeySpace;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +17,12 @@ public class Event {
     private String traceId;
     private String source;
     private String target;
-    private String data;
+    private String type;
+    private String payload;
 
     @Override
     public String toString() {
-        return String.format("%s -> %s : %s", source, target, data);
+       String encodedPayload =Base64.getEncoder().encodeToString(payload.getBytes());
+        return String.format("%s -> %s : %s [[http://localhost:8080/data?payload=%s&trace-id=%s{%s} data]]", source, target, type,encodedPayload,traceId,payload);
     }
 }
